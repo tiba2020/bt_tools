@@ -1,7 +1,6 @@
 """
 Loop execution for notifications
     pip3 install discord_webhook 
-    tmux new -t0
     while true; do echo "Checking miner logs for exceptions" && python3 /workspace/error_notif.py; sleep 300s; done
 2022-11-02 tiba
 """
