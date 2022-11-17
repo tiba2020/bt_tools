@@ -1,5 +1,6 @@
 """
 Skrypt sprawdzajacy bledy / wyjatki minerow i slacy notyfikacje na kanal discord
+2022-11-17
 """
 import json
 import subprocess
