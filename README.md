@@ -2,7 +2,7 @@
 
 ## Start:
 
-cd /workspace
+`cd /workspace`
 
 Sklonowanie repo:
 `git clone https://github.com/tiba2020/bt_tools`
