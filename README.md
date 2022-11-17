@@ -29,6 +29,6 @@ Uruchomienie skryptu: `python3 error_notif.py`
 
 Wyjscie z sesji monitorujacej `tmux: ctrl + d (command + d)`
 
-## Uruchomienie monitora poda:
+## Uruchomienie monitora minerow na podzie:
 
 `while true; do clear && python3 /workspace/bt_tools/pod_monit.py; sleep 120s; done`
