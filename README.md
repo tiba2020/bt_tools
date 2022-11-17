@@ -21,6 +21,8 @@ W error_notif uzupelniamy swoj webhook kanalu discord: WEB_HOOK:
 
 `nano error_notif.py`
 
+lub: `sed -i 's/WEB_HOOK/ZAMIEN_NA_SWOJ_WEBHOK/' error_notif.py`
+
 uruchomienie sesji TMUX: `tmux new -tmonit`
 
 Przejscie do katalogu bt_tools: `cd /workspace/bt_tools`
