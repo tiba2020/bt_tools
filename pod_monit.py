@@ -7,9 +7,8 @@ For execution on startup:
     nano ~/.bashrc
     2. paste at the end of the file:
     clear && python3 /workspace/pod_monit.py
-TODOs: - sort pm2 data by pid 
-       - merge nvidia memusage with pm2 data
-2022-11-01
+TODOs: - merge nvidia memusage with pm2 data
+2022-11-17
 """
 import os
 import json

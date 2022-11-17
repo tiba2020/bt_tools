@@ -20,7 +20,7 @@ import time
 from datetime import datetime, timedelta
 from discord_webhook import DiscordWebhook
 CARD_NAME=""
-WEB_HOOK = "https://discord.com/api/webhooks/1028636237248081940/u9ukX33R6L7erkx0ewoSwwBbcA3y2ovd56P-dqltxHZHcv5sbsu1Z3tZx6auPHVD0nrl"
+WEB_HOOK = "TWOJ_WEBHOOK_UZUPELNIC"
 
 runpod_id=os.environ.get('RUNPOD_POD_ID', "")
 card_name=os.environ.get('RUNPOD_POD_TBNM', CARD_NAME)
