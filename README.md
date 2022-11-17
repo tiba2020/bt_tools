@@ -17,7 +17,7 @@ W error_notif uzupelniamy swoj webhook kanalu discord: WEB_HOOK:
 
 `nano error_notif.py`
 
-lub: `sed -i -e 's,TWOJ_WEBHOOK_UZUPELNIC,ZAMIEN_NA_SWOJ_WEBHOK,g' error_notif.py`
+lub: `sed -i -e 's,TWOJ_WEBHOOK_UZUPELNIC,TUTAJ_WKLEJ_SWOJ_WEBHOOK,g' error_notif.py`
 
 (opcja) w skrypcie ustawiamy nazwe karty jako stala CARD_NAME
 
