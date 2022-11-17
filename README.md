@@ -33,4 +33,4 @@ Wyjscie z sesji monitorujacej `tmux: ctrl + d (command + d)`
 
 ## Uruchomienie monitora minerow na podzie:
 
-`while true; do clear && python3 /workspace/bt_tools/pod_monit.py; sleep 120s; done`
+`while true; do clear && python3 /workspace/bt_tools/pod_monit.py; sleep 300s; done`
