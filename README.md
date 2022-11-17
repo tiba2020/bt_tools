@@ -11,7 +11,7 @@ Sklonowanie repo:
 
 `pip3 install -r requirements.txt`
 
-(opcja) na podzie ustawiamy zmienna srodowiskowa RUNPOD_POD_TBNM, np: `export RUNPOD_POD_TBNM = "6000_01"`
+(opcja) na podzie ustawiamy zmienna srodowiskowa RUNPOD_POD_TBNM, np: `export RUNPOD_POD_TBNM="6000_01"`
 
 (opcja) w skrypcie ustawiamy nazwe karty jako stala CARD_NAME
 
