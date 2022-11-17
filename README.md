@@ -11,10 +11,6 @@ Sklonowanie repo:
 
 `pip3 install -r requirements.txt`
 
-(opcja) na podzie ustawiamy zmienna srodowiskowa RUNPOD_POD_TBNM, np: `export RUNPOD_POD_TBNM="6000_01"`
-
-(opcja) w skrypcie ustawiamy nazwe karty jako stala CARD_NAME
-
 ## Uruchomienie automatycznych notyfikacji:
 
 W error_notif uzupelniamy swoj webhook kanalu discord: WEB_HOOK:
@@ -23,7 +19,11 @@ W error_notif uzupelniamy swoj webhook kanalu discord: WEB_HOOK:
 
 lub: `sed -i -e 's,TWOJ_WEBHOOK_UZUPELNIC,ZAMIEN_NA_SWOJ_WEBHOK,g' error_notif.py`
 
+(opcja) w skrypcie ustawiamy nazwe karty jako stala CARD_NAME
+
 uruchomienie sesji TMUX: `tmux new -tmonit`
+
+(opcja) na podzie ustawiamy zmienna srodowiskowa RUNPOD_POD_TBNM, np: `export RUNPOD_POD_TBNM="6000_01"`
 
 Przejscie do katalogu bt_tools: `cd /workspace/bt_tools`
 
