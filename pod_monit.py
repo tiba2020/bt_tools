@@ -79,118 +79,113 @@ with subprocess.Popen(command0, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
         , shell=True) as proc:
    print(proc.stdout.read())
 
-try:
-    jsonFile = open(json_dir + "/pm2_jlist_status.json")
-except IOError:
-    print("ERROR: Opening file\n")
-    raise SystemExit
 
-data = json.load(jsonFile)
-card_miners = []
-for dataItem in data:
+with open(json_dir + "/pm2_jlist_status.json", 'w') as jsonFile:
 
-    try:
-        args = dataItem["pm2_env"]["args"]
+    data = json.load(jsonFile)
+    card_miners = []
+    for dataItem in data:
 
-        #Calculate average Loss based on ~last 3hrs
-        command1 =["tail -4200 /root/.pm2/logs/" + str(dataItem["name"]) + "-out.log | grep Loss: | cut -c 206-209 | awk '{ total += $1; count++ } END { print total/count }'"]
-        with subprocess.Popen(command1, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
-                , shell=True) as proc:
-            avg_loss = str(proc.stdout.read())[0:5]
-            avg_loss = avg_loss.replace("\n", "")
-        
-        #pm2 process data
-        pm_name = str(dataItem["name"])
-        pm_id = str(dataItem["pm_id"]) 
-        pm_pid = str(dataItem["pid"]) 
-        pm_status = str(dataItem["pm2_env"]["status"])
-        pm_uptime_ts = datetime.fromtimestamp(int(dataItem["pm2_env"]["pm_uptime"])/1000)
-        uptime = time_since_dttm(pm_uptime_ts)
+        try:
+            args = dataItem["pm2_env"]["args"]
 
-        if AXON_ARG in args:
-            axonInd = args.index(AXON_ARG)
-            axon = str(dataItem["pm2_env"]["args"][axonInd+1])
+            #Calculate average Loss based on ~last 3hrs
+            command1 =["tail -4200 /root/.pm2/logs/" + str(dataItem["name"]) + "-out.log | grep Loss: | cut -c 206-209 | awk '{ total += $1; count++ } END { print total/count }'"]
+            with subprocess.Popen(command1, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+                    , shell=True) as proc:
+                avg_loss = str(proc.stdout.read())[0:5]
+                avg_loss = avg_loss.replace("\n", "")
+            
+            #pm2 process data
+            pm_name = str(dataItem["name"])
+            pm_id = str(dataItem["pm_id"]) 
+            pm_pid = str(dataItem["pid"]) 
+            pm_status = str(dataItem["pm2_env"]["status"])
+            pm_uptime_ts = datetime.fromtimestamp(int(dataItem["pm2_env"]["pm_uptime"])/1000)
+            uptime = time_since_dttm(pm_uptime_ts)
+
+            if AXON_ARG in args:
+                axonInd = args.index(AXON_ARG)
+                axon = str(dataItem["pm2_env"]["args"][axonInd+1])
+            else:
+                axon = str("NoAxon")
+
+            if MODEL_ARG in args:
+                modelInd = args.index(MODEL_ARG)
+                model = str(dataItem["pm2_env"]["args"][modelInd+1])
+            else:
+                model = str("NoModel")
+
+            if SUBTENS_ARG in args:
+                subtensInd = args.index(SUBTENS_ARG)
+                subtensor = str(dataItem["pm2_env"]["args"][subtensInd+1]).split(':', 1)[0]
+            else:
+                subtensor = str("nakamoto")
+
+            my_miner = Miner(pm_name, pm_pid, pm_status, uptime, axon, model, subtensor, avg_loss, str(pm_uptime_ts) )
+            card_miners.append( my_miner )
+
+        except KeyError:
+            pm_name = str(dataItem["name"])
+            print(f"{pm_name} has no args")
+
+    # Display miner data
+    sorted_miners = []
+    sorted_miners = sorted(card_miners, key=lambda miner: miner.pm_uptime_ts)
+
+    print("[bold white]{}[/bold white]".format( "\n---------------------------------------------------".ljust(20) ) )
+    print( "[bold]{}{}{}{}{}{}{}{}[/bold]"
+                .format("Miner".ljust(8),"PID".ljust(8), "Status".ljust(8), "Uptime".ljust(10), "Axon".ljust(7), "Subtensor".ljust(16), "AvLoss".ljust(7), "Model".ljust(30)) )
+    for miner in sorted_miners:
+        if miner.pm_status == "online":
+            print( "[bold blue]{}[/bold blue][grey]{}[/grey][green]{}[/green][grey]{}[/grey][grey]{}[/grey][grey]{}[/grey][yellow]{}[/yellow][blue]{}[/blue]"
+                .format(miner.pm_name.ljust(8), miner.pm_pid.ljust(8), miner.pm_status.ljust(8), miner.uptime.ljust(10), miner.axon.ljust(7), miner.subtensor.ljust(16), miner.avg_loss.ljust(7), miner.model.ljust(30)) )
         else:
-            axon = str("NoAxon")
+            print( "[bold blue]{}[/bold blue][grey]{}[/grey][red]{}[/red][grey]{}[/grey][grey]{}[/grey][grey]{}[/grey][yellow]{}[/yellow]"
+                .format(miner.pm_name.ljust(8), miner.pm_pid.ljust(8), miner.pm_status.ljust(8), miner.uptime.ljust(10), miner.axon.ljust(7), miner.subtensor.ljust(16), miner.avg_loss.ljust(7), miner.model.ljust(30)) )
 
-        if MODEL_ARG in args:
-            modelInd = args.index(MODEL_ARG)
-            model = str(dataItem["pm2_env"]["args"][modelInd+1])
-        else:
-            model = str("NoModel")
+    #Display GPU usage
+    print("[bold white]{}[/bold white]".format( "\n------------ GPU Usage: -----------------".ljust(20) ) )
 
-        if SUBTENS_ARG in args:
-            subtensInd = args.index(SUBTENS_ARG)
-            subtensor = str(dataItem["pm2_env"]["args"][subtensInd+1]).split(':', 1)[0]
-        else:
-            subtensor = str("nakamoto")
-
-        my_miner = Miner(pm_name, pm_pid, pm_status, uptime, axon, model, subtensor, avg_loss, str(pm_uptime_ts) )
-        card_miners.append( my_miner )
-
-    except KeyError:
-        pm_name = str(dataItem["name"])
-        print(f"{pm_name} has no args")
-
-# Display miner data
-sorted_miners = []
-sorted_miners = sorted(card_miners, key=lambda miner: miner.pm_uptime_ts)
-
-print("[bold white]{}[/bold white]".format( "\n---------------------------------------------------".ljust(20) ) )
-print( "[bold]{}{}{}{}{}{}{}{}[/bold]"
-            .format("Miner".ljust(8),"PID".ljust(8), "Status".ljust(8), "Uptime".ljust(10), "Axon".ljust(7), "Subtensor".ljust(16), "AvLoss".ljust(7), "Model".ljust(30)) )
-for miner in sorted_miners:
-    if miner.pm_status == "online":
-        print( "[bold blue]{}[/bold blue][grey]{}[/grey][green]{}[/green][grey]{}[/grey][grey]{}[/grey][grey]{}[/grey][yellow]{}[/yellow][blue]{}[/blue]"
-            .format(miner.pm_name.ljust(8), miner.pm_pid.ljust(8), miner.pm_status.ljust(8), miner.uptime.ljust(10), miner.axon.ljust(7), miner.subtensor.ljust(16), miner.avg_loss.ljust(7), miner.model.ljust(30)) )
+    cmd_gpu_chk = ['nvidia-smi']  
+    with subprocess.Popen(cmd_gpu_chk, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+            , shell=True) as proc:
+        cmd_gpu_chk = proc.stdout.read()
+    #check for Failed to initialize NVML: Unknown Error
+    if cmd_gpu_chk.startswith('Failed'):
+        print("[bold red]NVML: Unknown Error[/bold red]\n")
     else:
-        print( "[bold blue]{}[/bold blue][grey]{}[/grey][red]{}[/red][grey]{}[/grey][grey]{}[/grey][grey]{}[/grey][yellow]{}[/yellow]"
-            .format(miner.pm_name.ljust(8), miner.pm_pid.ljust(8), miner.pm_status.ljust(8), miner.uptime.ljust(10), miner.axon.ljust(7), miner.subtensor.ljust(16), miner.avg_loss.ljust(7), miner.model.ljust(30)) )
+        command2 = ['nvidia-smi | sed -n 10p && nvidia-smi -q | grep -e "GPU Memory"']
+        with subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+                , shell=True) as proc:
+            print(proc.stdout.read())
 
-#Display GPU usage
-print("[bold white]{}[/bold white]".format( "\n------------ GPU Usage: -----------------".ljust(20) ) )
+    print("[bold white]{}[/bold white]".format( "--------- Errors & Warnings: -----------".ljust(20) ) )
+    #Display pm2 error logs from last 3 days
+    for dataItem in data:
+        print( "[bold blue]{}[/bold blue]".format( str(dataItem["name"]).ljust(10)  ) )
+        command3 = ['tail -1 /root/.pm2/logs/' + str(dataItem["name"]) + '-error.log']
+        with subprocess.Popen(command3, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+                , shell=True) as proc:
+            cmd3_out = datetime.strptime(proc.stdout.read()[0:19],"%Y-%m-%dT%H:%M:%S")
+        
+        if cmd3_out >= datetime.today() - timedelta(days=2):
+            print( "[bold red]{}[/bold red] {}".format( "Last errors: ", str(cmd3_out) ) )
+            command4 = ['tail -7 /root/.pm2/logs/' + str(dataItem["name"]) + '-error.log | grep -Fv -e "Using pad_token" -e "config_info = json_normalize" -e "KeyboardInterrupt" -e "───────────" -e "json_normalize is deprecated" -e "�─╯ │"']
+            with subprocess.Popen(command4, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+                    , shell=True) as proc:
+                cmd4_out = proc.stdout.read()
+                print(cmd4_out)
+        else: 
+            print( "[green]Last errors older than [/green]" + str(cmd3_out))
 
-cmd_gpu_chk = ['nvidia-smi']  
-with subprocess.Popen(cmd_gpu_chk, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
-        , shell=True) as proc:
-    cmd_gpu_chk = proc.stdout.read()
-#check for Failed to initialize NVML: Unknown Error
-if cmd_gpu_chk.startswith('Failed'):
-    print("[bold red]NVML: Unknown Error[/bold red]\n")
-else:
-    command2 = ['nvidia-smi | sed -n 10p && nvidia-smi -q | grep -e "GPU Memory"']
-    with subprocess.Popen(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
-            , shell=True) as proc:
-        print(proc.stdout.read())
-
-print("[bold white]{}[/bold white]".format( "--------- Errors & Warnings: -----------".ljust(20) ) )
-#Display pm2 error logs from last 3 days
-for dataItem in data:
-    print( "[bold blue]{}[/bold blue]".format( str(dataItem["name"]).ljust(10)  ) )
-    command3 = ['tail -1 /root/.pm2/logs/' + str(dataItem["name"]) + '-error.log']
-    with subprocess.Popen(command3, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
-            , shell=True) as proc:
-        cmd3_out = datetime.strptime(proc.stdout.read()[0:19],"%Y-%m-%dT%H:%M:%S")
-    
-    if cmd3_out >= datetime.today() - timedelta(days=2):
-        print( "[bold red]{}[/bold red] {}".format( "Last errors: ", str(cmd3_out) ) )
-        command4 = ['tail -7 /root/.pm2/logs/' + str(dataItem["name"]) + '-error.log | grep -Fv -e "Using pad_token" -e "config_info = json_normalize" -e "KeyboardInterrupt" -e "───────────" -e "json_normalize is deprecated" -e "�─╯ │"']
+    #Display exceptions from pm2 standard logs
+        command4 = ["tail -2000 /root/.pm2/logs/" + str(dataItem["name"]) + "-out.log | awk '/xception/ {$1=$19=$20=\"\"; print}' | sed -r \"s/\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g\" | cut -c -160"]
         with subprocess.Popen(command4, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
                 , shell=True) as proc:
             cmd4_out = proc.stdout.read()
-            print(cmd4_out)
-    else: 
-        print( "[green]Last errors older than [/green]" + str(cmd3_out))
-
-#Display exceptions from pm2 standard logs
-    command4 = ["tail -2000 /root/.pm2/logs/" + str(dataItem["name"]) + "-out.log | awk '/xception/ {$1=$19=$20=\"\"; print}' | sed -r \"s/\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g\" | cut -c -160"]
-    with subprocess.Popen(command4, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
-            , shell=True) as proc:
-        cmd4_out = proc.stdout.read()
-        if(not cmd4_out):
-            continue
-        else:
-            print("[bold red]{}[/bold red]".format( "Exceptions:" ) )
-            print(cmd4_out)
-
-jsonFile.close()
+            if(not cmd4_out):
+                continue
+            else:
+                print("[bold red]{}[/bold red]".format( "Exceptions:" ) )
+                print(cmd4_out)
