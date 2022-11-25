@@ -80,7 +80,7 @@ with subprocess.Popen(command0, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
    print(proc.stdout.read())
 
 
-with open(json_dir + "/pm2_jlist_status.json", 'w') as jsonFile:
+with open(json_dir + "/pm2_jlist_status.json", 'r') as jsonFile:
 
     data = json.load(jsonFile)
     card_miners = []
